@@ -2,25 +2,38 @@
 
 open Xunit
 open Xunit.Abstractions
+open FsCheck
+open FsCheck.Xunit
 open Blades.Core
 
-let parseTestInput (input: string) =
-    input.Split(',')
-    |> Array.map System.Int32.Parse
-    |> Seq.toList
+type RealRolls =
+    static member IntList() =
+        let gen =
+            gen { let! k = Gen.choose (2,10)
+                  let! sizes = Gen.piles k 10
+                  return! Gen.sequence [ for size in sizes -> Gen.resize size (Gen.choose (1,6)) ] }
+        Arb.fromGen (gen)
+
+type FailedRolls =
+    static member IntList() =
+        let gen =
+            gen { let! k = Gen.choose (2,10)
+                  let! sizes = Gen.piles k 10
+                  return! Gen.sequence [ for size in sizes -> Gen.resize size (Gen.choose (1,3)) ] }
+        Arb.fromGen (gen)
+
 
 type RollingTests(output: ITestOutputHelper) =
-    //todo: should replace this less good idea with the good idea property tests
-    // https://fsharpforfunandprofit.com/posts/property-based-testing-2/
-    // https://github.com/fscheck/FsCheck
 
-    [<Theory>]
-    //can't seem to make a list of ints so apparently i am going to pass in a strin until I can figure something else out
-    [<InlineData("6,6,6,6,6")>] 
-    [<InlineData("6,6,5,1")>]
-    let ``Should return critial action result when more than one six is rolled`` (inputAsString:string) =
-        let input = parseTestInput inputAsString
+    [<Property(Verbose = true, Arbitrary=[| typeof<RealRolls> |])>]
+    let ``Should return the number of failed rolls no matter the overall action result`` (input : int list) =
+        let expected = List.fold (fun acc elem -> if elem < 4 then acc + 1 else acc) 0 input
+        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        Assert.True(actual.failures = expected)
 
+    [<Fact>]
+    let ``Should return critial action result when more than one six is rolled`` () =
+        let input = [6;6;1]
         let expected = Types.ActionSuccesses.Critical
         let actual = Blades.Core.Scoundrel.rollToActionResult input
         Assert.True(actual.success = expected)
@@ -33,35 +46,24 @@ type RollingTests(output: ITestOutputHelper) =
         let actual = Blades.Core.Scoundrel.rollToActionResult input
         Assert.True(actual.success = expected)
 
-    [<Theory>]
-    [<InlineData("4,4,4")>]
-    [<InlineData("5,5,1")>]
-    [<InlineData("5,4,1")>]
-    let ``Should return partial success action result when any number of fours or fives are rolled`` inputAsString =
-        let input = parseTestInput inputAsString
+    [<Fact>]
+    let ``Should return partial success action result when four is the highest roll`` () =
+        let input = [4;4;1]
 
         let expected = Types.ActionSuccesses.Partial
         let actual = Blades.Core.Scoundrel.rollToActionResult input
         Assert.True(actual.success = expected)
 
-    [<Theory>]
-    [<InlineData("3,3")>]
-    [<InlineData("1,2,3")>]
-    [<InlineData("2,2,2,2")>]
-    let ``Should return failure success action result when no rolls are above 3`` inputAsString =
-        let input = parseTestInput inputAsString
+    [<Fact>]
+    let ``Should return partial success action result when five is the highest roll`` () =
+        let input = [5;5;1]
 
-        let expected = Types.ActionSuccesses.Failure
+        let expected = Types.ActionSuccesses.Partial
         let actual = Blades.Core.Scoundrel.rollToActionResult input
         Assert.True(actual.success = expected)
 
-    [<Theory>]
-    [<InlineData("3,3,6")>]
-    [<InlineData("1,2,3,5,5")>]
-    [<InlineData("2,2,2,2,1")>]
-    member __.``Should return the number of failled rolls no matter the overall action result`` inputAsString =
-        let input = parseTestInput inputAsString
-
-        let expected = List.fold (fun acc elem -> if elem < 4 then acc + 1 else acc) 0 input
+    [<Property(Verbose = true, Arbitrary=[| typeof<FailedRolls> |])>]
+    let ``Should return failure success action result when no rolls are above 3`` (input : int list) =
+        let expected = Types.ActionSuccesses.Failure
         let actual = Blades.Core.Scoundrel.rollToActionResult input
-        Assert.True(actual.failures = expected)
+        Assert.True(actual.success = expected)
