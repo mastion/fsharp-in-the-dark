@@ -27,43 +27,59 @@ type RollingTests(output: ITestOutputHelper) =
 
     [<Property(Verbose = true, Arbitrary=[| typeof<RealRolls> |])>]
     let ``Should return the number of failed rolls no matter the overall action result`` (input : int list) =
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll
         let expected = List.fold (fun acc elem -> if elem < 4 then acc + 1 else acc) 0 input
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
         Assert.True(actual.failures = expected)
 
     [<Fact>]
     let ``Should return critial action result when more than one six is rolled`` () =
         let input = [6;6;1]
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll        
         let expected = Types.ActionSuccesses.Critical
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
         Assert.True(actual.success = expected)
 
     [<Fact>]
     let ``Should return success action result when one six is rolled`` () =
         let input = [6;5;1]
-
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll        
         let expected = Types.ActionSuccesses.Full
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
         Assert.True(actual.success = expected)
 
     [<Fact>]
     let ``Should return partial success action result when four is the highest roll`` () =
         let input = [4;4;1]
-
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll        
         let expected = Types.ActionSuccesses.Partial
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
         Assert.True(actual.success = expected)
 
     [<Fact>]
     let ``Should return partial success action result when five is the highest roll`` () =
         let input = [5;5;1]
-
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll        
         let expected = Types.ActionSuccesses.Partial
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
         Assert.True(actual.success = expected)
 
     [<Property(Verbose = true, Arbitrary=[| typeof<FailedRolls> |])>]
     let ``Should return failure success action result when no rolls are above 3`` (input : int list) =
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = input.Length; effect = Types.Effect.Standard} : Types.ActionRoll        
         let expected = Types.ActionSuccesses.Failure
-        let actual = Blades.Core.Scoundrel.rollToActionResult input
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll input
+        Assert.True(actual.success = expected)
+    
+    [<Fact>]
+    let ``A Roll of zero dice should result in two die being rolled`` () =
+        let rolledDice = Scoundrel.roll 0
+        Assert.True(rolledDice.Length = 2)
+
+    [<Fact>]
+    let ``Should not crit if 0 die were rolled`` () =
+        let diceRolled = [6;6]
+        let actionRoll = { position = Types.Position.Controlled; attributeRank = 0; effect = Types.Effect.Standard} : Types.ActionRoll
+        let expected = Types.ActionSuccesses.Full
+        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll diceRolled
         Assert.True(actual.success = expected)
