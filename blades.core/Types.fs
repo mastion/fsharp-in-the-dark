@@ -43,4 +43,4 @@ module Types =
         position : Position;
         attributeRank : int; //todo put this in a type
         effect: Effect; 
-    }    
+    }
