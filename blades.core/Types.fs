@@ -44,3 +44,5 @@ module Types =
         attributeRank : int; //todo put this in a type
         effect: Effect; 
     }
+
+    type CritRule = ActionResult -> ActionResult
