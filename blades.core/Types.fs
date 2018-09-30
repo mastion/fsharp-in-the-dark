@@ -26,18 +26,18 @@ module Types =
         | Great   
 
     type Attribute =
-        | Attune
-        | Command
-        | Consort
-        | Finesse
-        | Hunt
-        | Prowl
-        | Skirmish
-        | Study
-        | Survey
-        | Sway
-        | Tinker
-        | Wreck
+        | Attune of int
+        | Command of int
+        | Consort of int
+        | Finesse of int
+        | Hunt of int
+        | Prowl of int
+        | Skirmish of int
+        | Study of int
+        | Survey of int
+        | Sway of int
+        | Tinker of int
+        | Wreck of int
 
     type ActionRoll = {
         position : Position;

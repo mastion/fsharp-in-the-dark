@@ -1,7 +1,31 @@
+open System.Collections.Generic
+
 namespace Blades.Core
 
-module Scoundrel =
+type InsightInput = {
+    Hunt : int
+    Study : int
+    Survey : int
+    Tinker : int
+}
 
+type ProwessInput = {
+    Finesse : int
+    Prowl : int
+    Skirmish : int
+    Wreck : int
+}
+
+type ResolveInput = {
+    Attune : int
+    Command : int
+    Consort : int
+    Sway : int
+}
+
+type Scoundrel(insightInput, prowessInput, resolveInput) =
+    let dict = new Dictionary<string, Type.Attribute>
+    
     let internal roll amount =
         let actualAmount amount =
             if amount = 0 then
