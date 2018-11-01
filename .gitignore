@@ -328,8 +328,6 @@ bin/
 obj/
 *.userprefs
 
-!paket.exe
-
 ### F# ###
 lib/debug
 lib/release
@@ -454,3 +452,6 @@ bower_components
 
 ### WebSharper ###
 Scripts/
+
+### Exception for packet ###
+!paket.exe
