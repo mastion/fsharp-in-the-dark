@@ -120,3 +120,19 @@ type RollingTests(output: ITestOutputHelper) =
         let actual = applyResultRules rules actionResult
         Assert.True(actual.success = Types.ActionSuccesses.Partial)
         Assert.True(actual.failures = 2)
+
+    [<Fact>]
+    let ``Should be able to roll a 6`` () =
+        let mutable continueLooping = true
+        let mutable loopedToManyTimes = 0
+        let mutable hasA6 = false
+        while continueLooping do
+            if loopedToManyTimes = 100 then
+                continueLooping <- false
+            else
+                let result = roll 100
+                let maybe6 = (result |> List.tryFind( fun number -> number = 6))
+                if maybe6.IsSome then
+                    hasA6 <- true
+                    continueLooping <- false
+        Assert.True(hasA6)
