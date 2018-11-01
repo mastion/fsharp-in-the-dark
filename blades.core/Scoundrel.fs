@@ -14,20 +14,8 @@ module Scoundrel =
             else
                 amount
 
-        let stopWatch = System.Diagnostics.Stopwatch.StartNew()
         let rnd = System.Random()
-        stopWatch.Stop()
-        printfn " ---- Creating Random object took: %f" stopWatch.Elapsed.TotalMilliseconds
-        
-        stopWatch.Reset()
-        stopWatch.Start()
-        let numbers = List.init (actualAmount amount) (fun _ -> (rnd.Next(1,7)))
-        stopWatch.Stop()
-        numbers
-        |> List.iter (fun n -> printfn "%i" n)
-
-        printfn " ------ Genearting random numbers: %f" stopWatch.Elapsed.TotalMilliseconds
-        numbers
+        List.init (actualAmount amount) (fun _ -> (rnd.Next(1,7)))
 
     let internal cleanseForAttribute0 (rollInfo : Types.ActionRoll) rollList =
         if rollInfo.attributeRank = 0 then [List.min rollList] else rollList
@@ -47,33 +35,21 @@ module Scoundrel =
         |> List.fold (fun acc roll ->
                                     match roll with
                                     | 6 ->
-                                        printfn "Six"
                                         critRule acc
                                     | 5 | 4 ->
-                                        printfn "Five - Four"
                                         match acc.success with
                                         | Types.ActionSuccesses.Full ->
                                             acc
                                         | _ ->
                                             {success= Types.ActionSuccesses.Partial; failures=acc.failures}
                                     | _ ->
-                                            printfn "Three - Two - One"
                                             {success= acc.success; failures=acc.failures+1}
                                     )
                                     {success= Types.ActionSuccesses.Failure; failures=0} : Types.ActionResult
 
     let actionRoll (rollInfo : Types.ActionRoll) = //TODO: read through SRD to 
-        let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-        let numberList = roll rollInfo.attributeRank
-        stopWatch.Stop()
-        printfn " ------ NumberList Generation: %f" stopWatch.Elapsed.TotalMilliseconds
-        stopWatch.Reset()
-        stopWatch.Start()
-        let result = numberList |> (rollToActionResult rollInfo)
-        stopWatch.Stop()
-        printfn " ------ rollResult: %f" stopWatch.Elapsed.TotalMilliseconds
-        stopWatch.Reset()
-        result
+        roll rollInfo.attributeRank
+        |> (rollToActionResult rollInfo)
 
     let applyRollRules  (rules: Types.RuleList) (rollInfo : Types.ActionRoll) =
         let result : List<Types.ScoundrelRollRule> = List.empty
