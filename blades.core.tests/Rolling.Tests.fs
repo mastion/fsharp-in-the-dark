@@ -5,6 +5,7 @@ open Xunit.Abstractions
 open FsCheck
 open FsCheck.Xunit
 open Blades.Core
+open Blades.Core.Scoundrel
 
 type RealRolls =
     static member IntList() =
@@ -80,6 +81,12 @@ type RollingTests(output: ITestOutputHelper) =
     let ``Should not crit if 0 die were rolled`` () =
         let diceRolled = [6;6]
         let actionRoll = { position = Types.Position.Controlled; attributeRank = 0; effect = Types.Effect.Standard} : Types.ActionRoll
-        let expected = Types.ActionSuccesses.Full
-        let actual = Blades.Core.Scoundrel.rollToActionResult actionRoll diceRolled
-        Assert.True(actual.success = expected)
+        let actual = rollToActionResult actionRoll diceRolled
+        Assert.True(actual.success = Types.ActionSuccesses.Full)
+
+    [<Fact>]
+    let ``Should return failure if lesser roll is below threshold for 0 attributerank`` () =
+        let diceRolled = [5;3]
+        let actionRoll = {position = Types.Position.Controlled; attributeRank = 0; effect = Types.Effect.Standard}: Types.ActionRoll
+        let actual = rollToActionResult actionRoll diceRolled
+        Assert.True(actual.success = Types.ActionSuccesses.Failure)

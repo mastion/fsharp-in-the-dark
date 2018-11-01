@@ -11,7 +11,7 @@ module Types =
 
     type ActionResult = 
         {
-            success : ActionSuccesses;
+            success : ActionSuccesses
             failures : int
         }
 

@@ -12,24 +12,21 @@ module Scoundrel =
         let rnd = System.Random()
         List.init (actualAmount amount) (fun _ -> (rnd.Next(1,6)))
 
-    let internal rollToActionResult (rollInfo : Types.ActionRoll) rollList =
-        let critRule : Types.CritRule =
-            if rollInfo.attributeRank = 0 then
-                let noCrit (actionResult : Types.ActionResult) = 
-                    {success= Types.ActionSuccesses.Full; failures=actionResult.failures} : Types.ActionResult
-                noCrit
-            else
-                let yesCrit (actionResult : Types.ActionResult) = 
-                    match actionResult.success with
-                    | Types.ActionSuccesses.Critical ->
-                        actionResult
-                    | Types.ActionSuccesses.Full ->
-                        {success= Types.ActionSuccesses.Critical; failures=actionResult.failures}
-                    | _ ->
-                        {success= Types.ActionSuccesses.Full; failures=actionResult.failures} : Types.ActionResult
-                yesCrit                    
+    let internal cleanseForAttribute0 (rollInfo : Types.ActionRoll) rollList =
+        if rollInfo.attributeRank = 0 then [List.min rollList] else rollList
 
+    let internal critRule : Types.CritRule = fun actionResult ->
+            match actionResult.success with
+            | Types.ActionSuccesses.Critical ->
+                actionResult
+            | Types.ActionSuccesses.Full ->
+                {success= Types.ActionSuccesses.Critical; failures=actionResult.failures}
+            | _ ->
+                {success= Types.ActionSuccesses.Full; failures=actionResult.failures} : Types.ActionResult
+
+    let internal rollToActionResult (rollInfo : Types.ActionRoll) rollList =
         rollList
+        |> cleanseForAttribute0 rollInfo
         |> List.fold (fun acc roll ->
                                     match roll with
                                     | 6 ->
