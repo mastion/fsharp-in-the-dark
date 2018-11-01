@@ -328,6 +328,7 @@ bin/
 obj/
 *.userprefs
 
+!paket.exe
 
 ### F# ###
 lib/debug
