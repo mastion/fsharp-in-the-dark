@@ -1,6 +1,11 @@
 namespace Blades.Core
 
+type ScoundrelType = { rules: Types.RuleList}
+
 module Scoundrel =
+
+    let create rules = 
+        {rules = rules}
 
     let internal roll amount =
         let actualAmount amount =
@@ -44,4 +49,29 @@ module Scoundrel =
 
     let actionRoll (rollInfo : Types.ActionRoll) = //TODO: read through SRD to 
         roll rollInfo.attributeRank
-        |> (rollToActionResult rollInfo) 
+        |> (rollToActionResult rollInfo)
+
+    let applyRollRules  (rules: Types.RuleList) (rollInfo : Types.ActionRoll) =
+        let result : List<Types.ScoundrelRollRule> = List.empty
+        rules
+        |> (List.fold (fun acc rule -> 
+                                        match rule with
+                                        | Types.ScoundrelRollRule r -> acc @ [r]
+                                        | Types.ScoundrelResultRule r-> acc ) result )
+        |> (List.fold (fun acc rule -> (rule acc)) rollInfo)
+
+    let applyResultRules  (rules: Types.RuleList) (rollResult : Types.ActionResult) =
+        let result : List<Types.ScoundrelResultRule> = List.empty
+        rules
+        |> (List.fold (fun acc rule -> 
+                                        match rule with
+                                        | Types.ScoundrelRollRule r -> acc
+                                        | Types.ScoundrelResultRule r-> acc @ [r] ) result )
+        |> (List.fold (fun acc rule -> (rule acc)) rollResult)
+
+    let actionRollWithRulesApplied (rollInfo : Types.ActionRoll) (rules: Types.RuleList) =
+        rollInfo
+        |> 
+        ((applyRollRules rules)
+        >> actionRoll
+        >> (applyResultRules rules)) 

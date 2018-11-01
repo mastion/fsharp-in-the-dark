@@ -46,3 +46,12 @@ module Types =
     }
 
     type CritRule = ActionResult -> ActionResult
+
+    type ScoundrelRollRule = ActionRoll -> ActionRoll
+    type ScoundrelResultRule = ActionResult -> ActionResult
+    
+    type ScoundrelRule =
+        | ScoundrelRollRule of ScoundrelRollRule
+        | ScoundrelResultRule of ScoundrelResultRule
+
+    type RuleList = List<ScoundrelRule>

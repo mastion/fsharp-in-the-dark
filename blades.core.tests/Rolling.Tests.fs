@@ -90,3 +90,33 @@ type RollingTests(output: ITestOutputHelper) =
         let actionRoll = {position = Types.Position.Controlled; attributeRank = 0; effect = Types.Effect.Standard}: Types.ActionRoll
         let actual = rollToActionResult actionRoll diceRolled
         Assert.True(actual.success = Types.ActionSuccesses.Failure)
+    
+    [<Fact>]
+    let ``Should apply roll rules`` () =
+        let rollInfo = { position = Types.Position.Desperate; attributeRank = 2; effect = Types.Effect.Limited } : Types.ActionRoll
+        let simpleRule (actionRoll : Types.ActionRoll) =
+            {
+                position = Types.Position.Controlled
+                attributeRank = actionRoll.attributeRank
+                effect = actionRoll.effect
+            } : Types.ActionRoll
+        let rule : Types.ScoundrelRollRule = simpleRule
+        let rules : Types.RuleList = [ (Types.ScoundrelRollRule simpleRule) ]
+        let actual = applyRollRules rules rollInfo
+        Assert.True(actual.position = Types.Position.Controlled)
+        Assert.True(actual.attributeRank = 2)
+        Assert.True(actual.effect = Types.Effect.Limited)
+
+    [<Fact>]
+    let ``Should apply roll rules`` () =
+        let actionResult = { success = Types.ActionSuccesses.Failure; failures = 2;} : Types.ActionResult
+        let simpleRule (actionResult : Types.ActionResult) =
+            {
+                success = Types.ActionSuccesses.Partial
+                failures = 2
+            } : Types.ActionResult
+        let rule : Types.ScoundrelResultRule = simpleRule
+        let rules : Types.RuleList = [ (Types.ScoundrelResultRule simpleRule) ]
+        let actual = applyResultRules rules actionResult
+        Assert.True(actual.success = Types.ActionSuccesses.Partial)
+        Assert.True(actual.failures = 2)
