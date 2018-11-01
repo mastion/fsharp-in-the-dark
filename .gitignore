@@ -454,4 +454,4 @@ bower_components
 Scripts/
 
 ### Exception for packet ###
-!.packet/paket.exe
+!paket.exe
